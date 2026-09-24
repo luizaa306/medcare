@@ -101,6 +101,18 @@ JOIN especialidades
 ON medicos.especialidade_id = especialidades.id
 ORDER BY medicos.valor_consulta DESC;
 
+CREATE VIEW vw_medicos_especialidades AS
+SELECT
+    medicos.nome AS medico,
+    medicos.crm,
+    especialidades.nome AS especialidade,
+    medicos.valor_consulta
+FROM medicos
+JOIN especialidades
+ON medicos.especialidade_id = especialidades.id
+ORDER BY medicos.valor_consulta DESC;
+SELECT * FROM vw_medicos_especialidades;
+
 
 SELECT
 consultas.id AS consulta_id,
@@ -117,6 +129,22 @@ JOIN especialidades
 ON medicos.especialidade_id = especialidades.id
 WHERE pacientes.nome = 'Carlos Ferreira';
 
+CREATE VIEW vw_consultas_carlos AS
+SELECT
+    consultas.id AS consulta_id,
+    consultas.data_hora,
+    medicos.nome AS medico,
+    especialidades.nome AS especialidade,
+    consultas.status
+FROM consultas
+JOIN pacientes
+ON consultas.paciente_id = pacientes.id
+JOIN medicos
+ON consultas.medico_id = medicos.id
+JOIN especialidades
+ON medicos.especialidade_id = especialidades.id
+WHERE pacientes.nome = 'Carlos Ferreira';
+SELECT * FROM vw_consultas_carlos;
 
 SELECT
 consultas.id AS consulta_id,
@@ -137,6 +165,26 @@ medicos.nome,
 medicos.valor_consulta
 ORDER BY consultas.id;
 
+CREATE VIEW vw_valor_da_consulta AS
+SELECT
+    consultas.id AS consulta_id,
+    pacientes.nome AS paciente,
+    medicos.nome AS medico,
+    medicos.valor_consulta + COALESCE(SUM(exames_consulta.valor_exame), 0) AS valor_total
+FROM consultas
+JOIN pacientes
+ON consultas.paciente_id = pacientes.id
+JOIN medicos
+ON consultas.medico_id = medicos.id
+LEFT JOIN exames_consulta
+ON consultas.id = exames_consulta.consulta_id
+GROUP BY
+    consultas.id,
+    pacientes.nome,
+    medicos.nome,
+    medicos.valor_consulta
+ORDER BY consultas.id;
+SELECT * FROM vw_valor_da_consulta;
 
 SELECT 
 nome, 
@@ -144,6 +192,15 @@ crm,
 valor_consulta
 FROM medicos
 WHERE valor_consulta > 300;
+
+CREATE VIEW vw_medicos_acima_300 AS
+SELECT
+    nome,
+    crm,
+    valor_consulta
+FROM medicos
+WHERE valor_consulta > 300;
+SELECT * FROM vw_medicos_acima_300;
 
 
 SELECT 
@@ -164,3 +221,27 @@ LEFT JOIN (
 ON consultas.id = exame.consulta_id
 WHERE consultas.status = 'Realizada'
 GROUP BY especialidades.nome;
+
+CREATE VIEW vw_faturamento_especialidade AS
+SELECT
+    especialidades.nome AS especialidade,
+    SUM(
+        medicos.valor_consulta +
+        COALESCE(exame.total_exames, 0)
+    ) AS total_faturado
+FROM consultas
+JOIN medicos
+ON consultas.medico_id = medicos.id
+JOIN especialidades
+ON medicos.especialidade_id = especialidades.id
+LEFT JOIN (
+    SELECT
+        consulta_id,
+        SUM(valor_exame) AS total_exames
+    FROM exames_consulta
+    GROUP BY consulta_id
+) AS exame
+ON consultas.id = exame.consulta_id
+WHERE consultas.status = 'Realizada'
+GROUP BY especialidades.nome;
+SELECT * FROM vw_faturamento_especialidade;
