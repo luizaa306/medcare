@@ -90,7 +90,6 @@ VALUES
 (4, 2, 6, 150.00, 50.00);
 
 
--- Q1
 
 CREATE VIEW vw_modalidades_custo_estimado AS
 SELECT
@@ -106,7 +105,6 @@ ORDER BY valor_mensal_ajustado DESC;
 SELECT * FROM vw_modalidades_custo_estimado;
 
 
--- Q2
 
 CREATE VIEW vw_matriculas_ativas AS
 SELECT
@@ -128,7 +126,6 @@ WHERE matriculas.status = 'Ativa';
 SELECT * FROM vw_matriculas_ativas;
 
 
--- Q3
 
 CREATE VIEW vw_alunos_vip AS
 SELECT
@@ -153,7 +150,7 @@ HAVING SUM(
 SELECT * FROM vw_alunos_vip;
 
 
--- Q4
+
 
 SELECT
     modalidades.nome AS modalidade,
@@ -170,7 +167,7 @@ AND planos.valor_mensal_base > 100
 AND modalidades.disponivel = TRUE;
 
 
--- Q5
+
 
 CREATE VIEW vw_faturamento_medio_plano AS
 SELECT
